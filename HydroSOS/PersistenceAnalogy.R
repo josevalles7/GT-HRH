@@ -1,4 +1,5 @@
-#--Subrutinas para cómputo de Analogía y Persistencia (pronóstico subestacional a estacional). Versión Beta--#
+#--Subrutinas para cómputo de pronósticos por Analogía (pronóstico subestacional a estacional). Versión Beta--#
+# Todavía restan corregir algunos errores de código que producen NAs. Por otro lado la aproximación seleccionada fue seleccionar analogías en dominio de Índice Estandarizado de Caudal (ajuste a gamma), con ventanas móviles (por defecto 30 días 6 hacia atrás y 3 hacia adelante para pronos). La métrica de similitud seleccionada es RMSE entre las ventanas móviles precedentes que cubren los mismos días del año que la ventana 'actual' evaluada. Los pesos se construyeros computando (1-R^2)^(-2) de cada ventana móvil análoga (IDW, con k=2), con R^2 siendo el coeficiente de determinación entre el SSI de cada ventana al respecto de la ventana 'actual'. Preferí esto por que el R^2 mide la asociación en términos de fase, mientras un bajo RMSE puede corresponder a una señal próxima pero con tendencia muy distinta (e.g. oscilante si se superpone sobre la actual). Hay que seguir tarbajando, esto lo escribí a la vyuelta de Bogotá y después, vacaciones y comenzó el año con todo. LMG 20230310
 #Librerías Requeridas. 
 library(fitdistrplus)
 library(lubridate)
