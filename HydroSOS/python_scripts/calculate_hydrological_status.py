@@ -6,6 +6,7 @@ JOSE VALLES  26-08-2024
 import argparse
 import os
 import sys
+import pandas as pd
 
 # Import user-defined librarys 
 # Define the path to the python HydroSOS Package
@@ -21,16 +22,24 @@ parser = argparse.ArgumentParser(
                     epilog='Jose Valles, DINAGUA, 26082024')
 
 # 
+parser.add_argument('freq', help='provide if the input time series is daily or monthly')
 parser.add_argument('input_directory', help='input directory, should ONLY contain .csv daily flow timeseries')        
 parser.add_argument('output_csv_directory', help='directory files will be saved to as cat_{input_file}.csv') 
-parser.add_argument('output_json_directory', help='directory files will be saved to as json files') 
+parser.add_argument('output_json_directory', help='directory files will be saved to as json files')
+
 
 args = parser.parse_args()
 
 for f in os.listdir(args.input_directory):
     if f.endswith('.csv'):
-        flowdata, stationid = aggvar.import_data(args.input_directory, filename = f)
-        MONTHLY_DISCHARGE = aggvar.calculate_monthly(flowdata)
+        if args.freq == 'daily':
+            print("daily input data found")
+            flowdata, stationid = aggvar.import_data(args.input_directory, filename = f)
+            MONTHLY_DISCHARGE = aggvar.calculate_monthly(flowdata)
+        else:
+            print("monthly input data found")
+            MONTHLY_DISCHARGE, stationid = aggvar.import_monthly(args.input_directory, filename = f)      
+        
         MONTHLY_STATUS = SOS.monthly_status(MONTHLY_DISCHARGE)
         SOS.export_csv(MONTHLY_STATUS, 
                        output_directory = args.output_csv_directory,

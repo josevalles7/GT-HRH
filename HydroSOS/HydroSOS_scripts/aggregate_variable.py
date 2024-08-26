@@ -64,6 +64,19 @@ def calculate_monthly(flowdata):
     # output
     return DISCHARGE_MONTHLY
 
+def import_monthly(input_directory,filename):
+        station = filename.split('.')[0]
+        DISCHARGE_MONTHLY = pd.read_csv(f"{input_directory}{filename}",parse_dates=['Fecha'],index_col="Fecha",dayfirst=True,na_values="NA")
+        DISCHARGE_MONTHLY.columns = ['mean_flow']
+        DISCHARGE_MONTHLY['year'] = DISCHARGE_MONTHLY.index.year
+        DISCHARGE_MONTHLY['month'] = DISCHARGE_MONTHLY.index.month
+        DISCHARGE_MONTHLY = DISCHARGE_MONTHLY.rename_axis("date")
+        DISCHARGE_MONTHLY.index = DISCHARGE_MONTHLY.index.map(lambda t: t.replace(day=1))
+        DISCHARGE_MONTHLY = DISCHARGE_MONTHLY.reset_index()
+        new_order = ['month', 'year', 'mean_flow']
+        DISCHARGE_MONTHLY = DISCHARGE_MONTHLY[new_order]
+        return DISCHARGE_MONTHLY, station
+
 def calculate_accumulated(flowdata,scale):
     # Set index of the input data
     flowdata.set_index('date', inplace=True)
