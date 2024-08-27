@@ -100,12 +100,13 @@ def calculate_accumulated(DISCHARGE_MONTHLY,scale):
     # Create columns 
     DISCHARGE_AGGREGATE['startMonth'] = (DISCHARGE_AGGREGATE.index - pd.DateOffset(months=(scale-1))).month
     DISCHARGE_AGGREGATE['endMonth'] = DISCHARGE_AGGREGATE.index.month
+    DISCHARGE_AGGREGATE['month'] = DISCHARGE_AGGREGATE.index.month
     DISCHARGE_AGGREGATE['year'] = DISCHARGE_AGGREGATE.index.year
     DISCHARGE_AGGREGATE.index = DISCHARGE_AGGREGATE.index.map(lambda t: t.replace(day=1))
     DISCHARGE_AGGREGATE.reset_index(inplace=True)
     # Rename and reorder columns
     # DISCHARGE_AGGREGATE.rename(columns={'flow':'mean_flow'}, inplace=True)
-    new_order = ['startMonth', 'endMonth', 'year', 'mean_flow']
+    new_order = ['date','startMonth', 'endMonth', 'month','year', 'mean_flow']
     DISCHARGE_AGGREGATE = DISCHARGE_AGGREGATE[new_order]
     # Output
     return DISCHARGE_AGGREGATE
