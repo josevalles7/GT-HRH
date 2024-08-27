@@ -17,15 +17,15 @@ import HydroSOS_scripts.aggregate_variable as aggvar
 
 # Define arguments 
 parser = argparse.ArgumentParser(
-                    prog='calculate_hydrological_status',
-                    description='Calculates monthly hydrological status from observation point',
+                    prog='calculate_monthly_hydrological_status',
+                    description='Calculates annual hydrological status from observation point',
                     epilog='Jose Valles, DINAGUA, 26082024')
 
 # 
-parser.add_argument('freq', help='provide if the input time series is daily or monthly')
+parser.add_argument('freq', help='provide the input time series frequency (daily or monthly)')
 parser.add_argument('input_directory', help='input directory, should ONLY contain .csv daily flow timeseries')        
-parser.add_argument('output_csv_directory', help='directory files will be saved to as cat_{input_file}.csv') 
-parser.add_argument('output_json_directory', help='directory files will be saved to as json files')
+parser.add_argument('output_csv_directory', help='output csv directory') 
+parser.add_argument('output_json_directory', help='output json directory')
 
 
 args = parser.parse_args()
@@ -40,8 +40,9 @@ for f in os.listdir(args.input_directory):
             print("monthly input data found")
             MONTHLY_DISCHARGE, stationid = aggvar.import_monthly(args.input_directory, filename = f)      
         
-        MONTHLY_STATUS = SOS.monthly_status(MONTHLY_DISCHARGE)
-        SOS.export_csv(MONTHLY_STATUS, 
+        DISCHARGE_TWELVE_MONTHS = aggvar.calculate_accumulated(MONTHLY_DISCHARGE, 12)
+        ANNUALY_STATUS = SOS.quarterly_status(DISCHARGE_TWELVE_MONTHS)
+        SOS.export_csv(ANNUALY_STATUS, 
                        output_directory = args.output_csv_directory,
                        filename = stationid)
         print("==================================================================")

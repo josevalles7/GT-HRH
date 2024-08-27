@@ -29,62 +29,64 @@ def monthly_status(DISCHARGE_MONTHLY):
     DISCHARGE_SELECTION = DISCHARGE_MONTHLY[(DISCHARGE_MONTHLY['year'] >= stdStart) & (DISCHARGE_MONTHLY['year'] <= stdEnd)]
     DISCHARGE_AVERAGE = DISCHARGE_SELECTION.groupby(DISCHARGE_SELECTION.month).mean()
     DISCHARGE_AVERAGE = DISCHARGE_AVERAGE.reindex(columns=['mean_flow'])
+    DISCHARGE_STATUS = DISCHARGE_MONTHLY.copy()
     # Calcular indicadores
-    DISCHARGE_MONTHLY['percentile_flow'] = np.nan
-    DISCHARGE_MONTHLY['rank_average'] = np.nan
-    DISCHARGE_MONTHLY['complete%'] = np.nan
+    DISCHARGE_STATUS['percentile_flow'] = np.nan
+    DISCHARGE_STATUS['rank_average'] = np.nan
+    DISCHARGE_STATUS['complete%'] = np.nan
 
-    for i in range(len(DISCHARGE_MONTHLY)):
+    for i in range(len(DISCHARGE_STATUS)):
         # Extract the current month 
-        m = DISCHARGE_MONTHLY.month[i]
+        m = DISCHARGE_STATUS.month[i]
         # Extract the current year
-        y = DISCHARGE_MONTHLY.year[i]
-        DISCHARGE_MONTHLY.loc[DISCHARGE_MONTHLY.eval('month==@m & year==@y'),'rank_average']  = DISCHARGE_MONTHLY.query('month==@m')['mean_flow'].rank()
-        DISCHARGE_MONTHLY.loc[DISCHARGE_MONTHLY.eval('month==@m & year==@y'),'complete%']  = DISCHARGE_MONTHLY.query('month==@m')["mean_flow"].notnull().sum()
-        DISCHARGE_MONTHLY.loc[DISCHARGE_MONTHLY.eval('month==@m & year==@y'),'percentile_flow'] = (DISCHARGE_MONTHLY['mean_flow'][i] - DISCHARGE_AVERAGE.query('month == @m')["mean_flow"].item()) / DISCHARGE_AVERAGE.query('month == @m')["mean_flow"].item()
+        y = DISCHARGE_STATUS.year[i]
+        DISCHARGE_STATUS.loc[DISCHARGE_STATUS.eval('month==@m & year==@y'),'rank_average']  = DISCHARGE_STATUS.query('month==@m')['mean_flow'].rank()
+        DISCHARGE_STATUS.loc[DISCHARGE_STATUS.eval('month==@m & year==@y'),'complete%']  = DISCHARGE_STATUS.query('month==@m')["mean_flow"].notnull().sum()
+        DISCHARGE_STATUS.loc[DISCHARGE_STATUS.eval('month==@m & year==@y'),'percentile_flow'] = (DISCHARGE_STATUS['mean_flow'][i] - DISCHARGE_AVERAGE.query('month == @m')["mean_flow"].item()) / DISCHARGE_AVERAGE.query('month == @m')["mean_flow"].item()
 
-    DISCHARGE_MONTHLY['weibell_rank'] = DISCHARGE_MONTHLY['rank_average']/(DISCHARGE_MONTHLY['complete%']+1)
+    DISCHARGE_STATUS['weibell_rank'] = DISCHARGE_STATUS['rank_average']/(DISCHARGE_STATUS['complete%']+1)
 
-    criteria = [DISCHARGE_MONTHLY['weibell_rank'].between(percentile[3],1.00),
-        DISCHARGE_MONTHLY['weibell_rank'].between(percentile[2],percentile[3]),
-        DISCHARGE_MONTHLY['weibell_rank'].between(percentile[1],percentile[2]),
-        DISCHARGE_MONTHLY['weibell_rank'].between(percentile[0],percentile[1]),
-        DISCHARGE_MONTHLY['weibell_rank'].between(0.00,percentile[0])]
+    criteria = [DISCHARGE_STATUS['weibell_rank'].between(percentile[3],1.00),
+        DISCHARGE_STATUS['weibell_rank'].between(percentile[2],percentile[3]),
+        DISCHARGE_STATUS['weibell_rank'].between(percentile[1],percentile[2]),
+        DISCHARGE_STATUS['weibell_rank'].between(percentile[0],percentile[1]),
+        DISCHARGE_STATUS['weibell_rank'].between(0.00,percentile[0])]
 
-    DISCHARGE_MONTHLY['percentile_range'] = np.select(criteria,values,None)
-    DISCHARGE_MONTHLY['flowcat'] = np.select(criteria,flow_cat,pd.NA)
+    DISCHARGE_STATUS['percentile_range'] = np.select(criteria,values,None)
+    DISCHARGE_STATUS['flowcat'] = np.select(criteria,flow_cat,pd.NA)
 
-    return DISCHARGE_MONTHLY
+    return DISCHARGE_STATUS
 
 def quarterly_status(DISCHARGE_THREE_MONTHS):
     # # Calculate long-term average
     DISCHARGE_SELECTION_THREE_MONTH = DISCHARGE_THREE_MONTHS[(DISCHARGE_THREE_MONTHS['year'] >= stdStart) & (DISCHARGE_THREE_MONTHS['year'] < stdEnd)]
     DISCHARGE_AVERAGE_THREE_MONTH = DISCHARGE_SELECTION_THREE_MONTH.groupby(DISCHARGE_SELECTION_THREE_MONTH.startMonth).mean()
     DISCHARGE_AVERAGE_THREE_MONTH = DISCHARGE_AVERAGE_THREE_MONTH.reindex(columns=['mean_flow'])
+    DISCHARGE_QUATERLY = DISCHARGE_THREE_MONTHS.copy()
     # Calcular indicadores
-    DISCHARGE_THREE_MONTHS['percentage_flow'] = np.nan
-    DISCHARGE_THREE_MONTHS['rank_average'] = np.nan
-    DISCHARGE_THREE_MONTHS['complete%'] = np.nan
+    DISCHARGE_QUATERLY['percentage_flow'] = np.nan
+    DISCHARGE_QUATERLY['rank_average'] = np.nan
+    DISCHARGE_QUATERLY['complete%'] = np.nan
 
-    for i in range(len(DISCHARGE_THREE_MONTHS)):
+    for i in range(len(DISCHARGE_QUATERLY)):
         # Extract the current month 
-        m = DISCHARGE_THREE_MONTHS.startMonth[i]
+        m = DISCHARGE_QUATERLY.startMonth[i]
         # Extract the current year
-        y = DISCHARGE_THREE_MONTHS.year[i]
-        DISCHARGE_THREE_MONTHS.loc[DISCHARGE_THREE_MONTHS.eval('startMonth==@m & year==@y'),'rank_average']  = DISCHARGE_THREE_MONTHS.query('startMonth==@m')['mean_flow'].rank()
-        DISCHARGE_THREE_MONTHS.loc[DISCHARGE_THREE_MONTHS.eval('startMonth==@m & year==@y'),'complete%']  = DISCHARGE_THREE_MONTHS.query('startMonth==@m')["mean_flow"].notnull().sum()
-        DISCHARGE_THREE_MONTHS.loc[DISCHARGE_THREE_MONTHS.eval('startMonth==@m & year==@y'),'percentage_flow'] = (DISCHARGE_THREE_MONTHS['mean_flow'][i] - DISCHARGE_AVERAGE_THREE_MONTH.query('startMonth == @m')["mean_flow"].item()) / DISCHARGE_AVERAGE_THREE_MONTH.query('startMonth == @m')["mean_flow"].item()
+        y = DISCHARGE_QUATERLY.year[i]
+        DISCHARGE_QUATERLY.loc[DISCHARGE_QUATERLY.eval('startMonth==@m & year==@y'),'rank_average']  = DISCHARGE_QUATERLY.query('startMonth==@m')['mean_flow'].rank()
+        DISCHARGE_QUATERLY.loc[DISCHARGE_QUATERLY.eval('startMonth==@m & year==@y'),'complete%']  = DISCHARGE_QUATERLY.query('startMonth==@m')["mean_flow"].notnull().sum()
+        DISCHARGE_QUATERLY.loc[DISCHARGE_QUATERLY.eval('startMonth==@m & year==@y'),'percentage_flow'] = (DISCHARGE_QUATERLY['mean_flow'][i] - DISCHARGE_AVERAGE_THREE_MONTH.query('startMonth == @m')["mean_flow"].item()) / DISCHARGE_AVERAGE_THREE_MONTH.query('startMonth == @m')["mean_flow"].item()
 
-    DISCHARGE_THREE_MONTHS['weibell_rank'] = DISCHARGE_THREE_MONTHS['rank_average']/(DISCHARGE_THREE_MONTHS['complete%']+1)
+    DISCHARGE_QUATERLY['weibell_rank'] = DISCHARGE_QUATERLY['rank_average']/(DISCHARGE_QUATERLY['complete%']+1)
    
-    criteria_three_months = [DISCHARGE_THREE_MONTHS['weibell_rank'].between(percentile[3],1.00),
-        DISCHARGE_THREE_MONTHS['weibell_rank'].between(percentile[2],percentile[3]),
-        DISCHARGE_THREE_MONTHS['weibell_rank'].between(percentile[1],percentile[2]),
-        DISCHARGE_THREE_MONTHS['weibell_rank'].between(percentile[0],percentile[1]),
-        DISCHARGE_THREE_MONTHS['weibell_rank'].between(0.00,percentile[0])]
+    criteria_three_months = [DISCHARGE_QUATERLY['weibell_rank'].between(percentile[3],1.00),
+        DISCHARGE_QUATERLY['weibell_rank'].between(percentile[2],percentile[3]),
+        DISCHARGE_QUATERLY['weibell_rank'].between(percentile[1],percentile[2]),
+        DISCHARGE_QUATERLY['weibell_rank'].between(percentile[0],percentile[1]),
+        DISCHARGE_QUATERLY['weibell_rank'].between(0.00,percentile[0])]
 
-    DISCHARGE_THREE_MONTHS['percentile_range'] = np.select(criteria_three_months,values,None)
-    DISCHARGE_THREE_MONTHS['flowcat'] = np.select(criteria_three_months,flow_cat,pd.NA)
+    DISCHARGE_QUATERLY['percentile_range'] = np.select(criteria_three_months,values,None)
+    DISCHARGE_QUATERLY['flowcat'] = np.select(criteria_three_months,flow_cat,pd.NA)
 
     row_labels = {1:'JFM',
             2:'FMA',
@@ -99,39 +101,40 @@ def quarterly_status(DISCHARGE_THREE_MONTHS):
             11:'NDE',
             12:'DEF'}
     
-    DISCHARGE_THREE_MONTHS['period'] = DISCHARGE_THREE_MONTHS['startMonth'].replace(row_labels) 
-    return DISCHARGE_THREE_MONTHS
+    DISCHARGE_QUATERLY['period'] = DISCHARGE_QUATERLY['startMonth'].replace(row_labels) 
+    return DISCHARGE_QUATERLY
 
 def annualy_status(DISCHARGE_TWELVE_MONTHS):
     DISCHARGE_SELECTION_TWELVE_MONTH = DISCHARGE_TWELVE_MONTHS[(DISCHARGE_TWELVE_MONTHS['year'] >= stdStart) & (DISCHARGE_TWELVE_MONTHS['year'] < stdEnd)]
     DISCHARGE_AVERAGE_TWELVE_MONTH = DISCHARGE_SELECTION_TWELVE_MONTH.groupby(DISCHARGE_SELECTION_TWELVE_MONTH.startMonth).mean()
     DISCHARGE_AVERAGE_TWELVE_MONTH = DISCHARGE_AVERAGE_TWELVE_MONTH.reindex(columns=['mean_flow'])
+    DISCHARGE_ANNUALY = DISCHARGE_TWELVE_MONTHS.copy()
     # Calcular indice
-    DISCHARGE_TWELVE_MONTHS['percentage_flow'] = np.nan
-    DISCHARGE_TWELVE_MONTHS['rank_average'] = np.nan
-    DISCHARGE_TWELVE_MONTHS['complete%'] = np.nan
+    DISCHARGE_ANNUALY['percentage_flow'] = np.nan
+    DISCHARGE_ANNUALY['rank_average'] = np.nan
+    DISCHARGE_ANNUALY['complete%'] = np.nan
 
-    for i in range(len(DISCHARGE_TWELVE_MONTHS)):
+    for i in range(len(DISCHARGE_ANNUALY)):
         # Extract the current month 
-        m = DISCHARGE_TWELVE_MONTHS.startMonth[i]
+        m = DISCHARGE_ANNUALY.startMonth[i]
         # Extract the current year
-        y = DISCHARGE_TWELVE_MONTHS.year[i]
-        DISCHARGE_TWELVE_MONTHS.loc[DISCHARGE_TWELVE_MONTHS.eval('startMonth==@m & year==@y'),'rank_average']  = DISCHARGE_TWELVE_MONTHS.query('startMonth==@m')['mean_flow'].rank()
-        DISCHARGE_TWELVE_MONTHS.loc[DISCHARGE_TWELVE_MONTHS.eval('startMonth==@m & year==@y'),'complete%']  = DISCHARGE_TWELVE_MONTHS.query('startMonth==@m')["mean_flow"].notnull().sum()
-        DISCHARGE_TWELVE_MONTHS.loc[DISCHARGE_TWELVE_MONTHS.eval('startMonth==@m & year==@y'),'percentage_flow'] = (DISCHARGE_TWELVE_MONTHS['mean_flow'][i] - DISCHARGE_AVERAGE_TWELVE_MONTH.query('startMonth == @m')["mean_flow"].item()) / DISCHARGE_AVERAGE_TWELVE_MONTH.query('startMonth == @m')["mean_flow"].item()
+        y = DISCHARGE_ANNUALY.year[i]
+        DISCHARGE_ANNUALY.loc[DISCHARGE_ANNUALY.eval('startMonth==@m & year==@y'),'rank_average']  = DISCHARGE_ANNUALY.query('startMonth==@m')['mean_flow'].rank()
+        DISCHARGE_ANNUALY.loc[DISCHARGE_ANNUALY.eval('startMonth==@m & year==@y'),'complete%']  = DISCHARGE_ANNUALY.query('startMonth==@m')["mean_flow"].notnull().sum()
+        DISCHARGE_ANNUALY.loc[DISCHARGE_ANNUALY.eval('startMonth==@m & year==@y'),'percentage_flow'] = (DISCHARGE_ANNUALY['mean_flow'][i] - DISCHARGE_AVERAGE_TWELVE_MONTH.query('startMonth == @m')["mean_flow"].item()) / DISCHARGE_AVERAGE_TWELVE_MONTH.query('startMonth == @m')["mean_flow"].item()
 
-    DISCHARGE_TWELVE_MONTHS['weibull_rank'] = DISCHARGE_TWELVE_MONTHS['rank_average']/(DISCHARGE_TWELVE_MONTHS['complete%']+1)
+    DISCHARGE_ANNUALY['weibull_rank'] = DISCHARGE_ANNUALY['rank_average']/(DISCHARGE_ANNUALY['complete%']+1)
     
-    criteria_twelve_months = [DISCHARGE_TWELVE_MONTHS['weibull_rank'].between(percentile[3], 1.00),
-                          DISCHARGE_TWELVE_MONTHS['weibull_rank'].between(percentile[2], percentile[3]),
-                          DISCHARGE_TWELVE_MONTHS['weibull_rank'].between(percentile[1], percentile[2]),
-                          DISCHARGE_TWELVE_MONTHS['weibull_rank'].between(percentile[0], percentile[1]),
-                          DISCHARGE_TWELVE_MONTHS['weibull_rank'].between(0.00, percentile[0])]
+    criteria_twelve_months = [DISCHARGE_ANNUALY['weibull_rank'].between(percentile[3], 1.00),
+                          DISCHARGE_ANNUALY['weibull_rank'].between(percentile[2], percentile[3]),
+                          DISCHARGE_ANNUALY['weibull_rank'].between(percentile[1], percentile[2]),
+                          DISCHARGE_ANNUALY['weibull_rank'].between(percentile[0], percentile[1]),
+                          DISCHARGE_ANNUALY['weibull_rank'].between(0.00, percentile[0])]
         
-    DISCHARGE_TWELVE_MONTHS['percentile_range'] = np.select(criteria_twelve_months,values,None)
-    DISCHARGE_TWELVE_MONTHS['flowcat'] = np.select(criteria_twelve_months,flow_cat,pd.NA)
+    DISCHARGE_ANNUALY['percentile_range'] = np.select(criteria_twelve_months,values,None)
+    DISCHARGE_ANNUALY['flowcat'] = np.select(criteria_twelve_months,flow_cat,pd.NA)
 
-    return DISCHARGE_TWELVE_MONTHS
+    return DISCHARGE_ANNUALY
 
 def export_csv(groupBy,output_directory,filename):
     groupBy['date'] = pd.to_datetime(groupBy[['year', 'month']].assign(DAY=1))

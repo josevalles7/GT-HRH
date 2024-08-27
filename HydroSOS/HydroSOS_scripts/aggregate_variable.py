@@ -59,7 +59,7 @@ def calculate_monthly(flowdata):
     DISCHARGE_MONTHLY.reset_index(inplace=True)
     # rename and reorder columns
     DISCHARGE_MONTHLY.rename(columns={'flow':'mean_flow'}, inplace=True)
-    new_order = ['month', 'year', 'mean_flow']
+    new_order = ['date', 'month', 'year', 'mean_flow']
     DISCHARGE_MONTHLY = DISCHARGE_MONTHLY[new_order]
     # output
     return DISCHARGE_MONTHLY
@@ -68,31 +68,33 @@ def import_monthly(input_directory,filename):
         station = filename.split('.')[0]
         DISCHARGE_MONTHLY = pd.read_csv(f"{input_directory}{filename}",parse_dates=['Fecha'],index_col="Fecha",dayfirst=True,na_values="NA")
         DISCHARGE_MONTHLY.columns = ['mean_flow']
+        DISCHARGE_MONTHLY.index.name = 'date'
         DISCHARGE_MONTHLY['year'] = DISCHARGE_MONTHLY.index.year
         DISCHARGE_MONTHLY['month'] = DISCHARGE_MONTHLY.index.month
         DISCHARGE_MONTHLY = DISCHARGE_MONTHLY.rename_axis("date")
         DISCHARGE_MONTHLY.index = DISCHARGE_MONTHLY.index.map(lambda t: t.replace(day=1))
         DISCHARGE_MONTHLY = DISCHARGE_MONTHLY.reset_index()
-        new_order = ['month', 'year', 'mean_flow']
+        new_order = ['date','month', 'year', 'mean_flow']
         DISCHARGE_MONTHLY = DISCHARGE_MONTHLY[new_order]
         return DISCHARGE_MONTHLY, station
 
-def calculate_accumulated(flowdata,scale):
+def calculate_accumulated(DISCHARGE_MONTHLY,scale):
+    DISCHARGE_MONTHLY = DISCHARGE_MONTHLY.reset_index()
     # Set index of the input data
-    flowdata.set_index('date', inplace=True)
+    DISCHARGE_MONTHLY.set_index('date', inplace=True)
     # define a missing formula function
     def calculate_missing_percentage(x):
         pct_missing = x.isnull().sum() * 100 / len(x)
         return round(pct_missing,2)
     
     # Aggregate data daily to monthly and calculate when the missing values are below max_pct_missing
-    DISCHARGE_MONTHLY = flowdata.resample('M',closed="right").apply(
-        lambda x: x.mean() if calculate_missing_percentage(x) < max_pct_missing else np.nan
-        )
+    # DISCHARGE_MONTHLY = flowdata.resample('M',closed="right").apply(
+    #     lambda x: x.mean() if calculate_missing_percentage(x) < max_pct_missing else np.nan
+    #     )
     # Drop columns that are not necessary
     DISCHARGE_MONTHLY.drop(columns=['month','year'])
     # Calculate the multimonthly (scale) mean of discharge if the missing values are below the max_pct_missing
-    DISCHARGE_AGGREGATE = pd.DataFrame(DISCHARGE_MONTHLY['flow'].rolling(scale).apply(
+    DISCHARGE_AGGREGATE = pd.DataFrame(DISCHARGE_MONTHLY['mean_flow'].rolling(scale).apply(
         lambda x: x.mean() if calculate_missing_percentage(x) < max_pct_missing else np.nan
         ))
     # Create columns 
@@ -102,7 +104,7 @@ def calculate_accumulated(flowdata,scale):
     DISCHARGE_AGGREGATE.index = DISCHARGE_AGGREGATE.index.map(lambda t: t.replace(day=1))
     DISCHARGE_AGGREGATE.reset_index(inplace=True)
     # Rename and reorder columns
-    DISCHARGE_AGGREGATE.rename(columns={'flow':'mean_flow'}, inplace=True)
+    # DISCHARGE_AGGREGATE.rename(columns={'flow':'mean_flow'}, inplace=True)
     new_order = ['startMonth', 'endMonth', 'year', 'mean_flow']
     DISCHARGE_AGGREGATE = DISCHARGE_AGGREGATE[new_order]
     # Output
